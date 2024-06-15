@@ -1,16 +1,26 @@
-import * as cdk from 'aws-cdk-lib';
+import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
 
-export class InfrastructureStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+interface InfrastructureStackProps extends StackProps {
+  envName: string;
+}
+
+export class InfrastructureStack extends Stack {
+  constructor(scope: Construct, id: string, props?: InfrastructureStackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const envName = props?.envName
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'InfrastructureQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    console.log(`${envName} environment detected. deploying s3 bucket.`)
+
+    const infraBucket = new Bucket(
+      this,
+      "InfraBucket",
+      {
+        bucketName: `cloudmancer-${envName}-infrastructure-bucket`,
+        removalPolicy: RemovalPolicy.DESTROY
+      }
+    )
   }
 }
