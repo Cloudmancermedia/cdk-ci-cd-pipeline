@@ -1,21 +1,26 @@
-#!/usr/bin/env node
-import 'source-map-support/register';
-import * as cdk from 'aws-cdk-lib';
+import { App } from 'aws-cdk-lib';
 import { PipelineStack } from '../lib/pipeline-stack';
 
-const app = new cdk.App();
-new PipelineStack(app, 'PipelineStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
+const app = new App();
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+// for new environments, like sandboxes etc., simply copy the cdk.json context format for dev and change the values accordingly.
+const environments = ['dev', 'prod']
+const deployEnvironment = app.node.tryGetContext('env');
+if (!deployEnvironment || !environments.includes(deployEnvironment)) throw new Error('Please supply the env context variable: cdk deploy --context env=dev/prod/etc')
+let env = app.node.tryGetContext(deployEnvironment);
+// const frontendRepoName = app.node.tryGetContext('frontendRepoName');
+const infrastructureRepoName = app.node.tryGetContext('infrastructureRepoName');
+const repositoryOwner = app.node.tryGetContext('repositoryOwner');
+env = {
+  ...env,
+  // frontendRepoName,
+  infrastructureRepoName,
+  repositoryOwner,
+  description: `Stack for the ${deployEnvironment} CI pipeline deployed using the CDK. If you need to delete this stack, delete the ${deployEnvironment} CDK infrastructure stack first.`
+}
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
-
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
-});
+new PipelineStack(
+  app,
+  `${deployEnvironment}-CI-Pipeline-Stack`,
+  env
+)

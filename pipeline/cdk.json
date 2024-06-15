@@ -67,6 +67,21 @@
     "@aws-cdk/aws-eks:nodegroupNameAttribute": true,
     "@aws-cdk/aws-ec2:ebsDefaultGp3Volume": true,
     "@aws-cdk/aws-ecs:removeDefaultDeploymentAlarm": true,
-    "@aws-cdk/custom-resources:logApiResponseDataPropertyTrueDefault": false
+    "@aws-cdk/custom-resources:logApiResponseDataPropertyTrueDefault": false,
+    "frontendRepoName": "frontend",
+    "infrastructureRepoName": "cdk-ci-cd-pipeline",
+    "repositoryOwner": "cloudmancermedia",
+    "dev": {
+      "envName": "dev",
+      "subdomain": "dev",
+      "frontendBranchName": "dev",
+      "infrastructureBranchName": "dev"
+    },
+    "prod": {
+      "envName": "prod",
+      "subdomain": "",
+      "frontendBranchName": "prod",
+      "infrastructureBranchName": "prod"
+    }
   }
 }
