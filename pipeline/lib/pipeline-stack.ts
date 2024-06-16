@@ -15,6 +15,7 @@ import { Construct } from 'constructs';
 
 interface PipelineStackProps extends StackProps {
   envName: string;
+  subdomain: string;
   // frontendRepoName: string;
   // frontendBranchName: string;
   infrastructureRepoName: string;
@@ -28,6 +29,7 @@ export class PipelineStack extends Stack {
     console.log(props)
     const { 
       envName,
+      subdomain,
       // frontendRepoName,
       // frontendBranchName,
       infrastructureRepoName,
@@ -110,7 +112,7 @@ export class PipelineStack extends Stack {
     );
 
      // Define the domain name and hosted zone
-    //  const domainName = 'domain.com';
+    //  const domainName = `${subdomain}domain.com`;
     //  const hostedZone = new HostedZone(
     //   this,
     //   'HostedZone',

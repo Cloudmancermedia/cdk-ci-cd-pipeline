@@ -70,10 +70,10 @@
     "@aws-cdk/custom-resources:logApiResponseDataPropertyTrueDefault": false,
     "frontendRepoName": "vue-app",
     "infrastructureRepoName": "cdk-ci-cd-pipeline",
-    "repositoryOwner": "cloudmancermedia",
+    "repositoryOwner": "Cloudmancermedia",
     "dev": {
       "envName": "dev",
-      "subdomain": "dev",
+      "subdomain": "dev.",
       "frontendBranchName": "dev",
       "infrastructureBranchName": "dev"
     },
