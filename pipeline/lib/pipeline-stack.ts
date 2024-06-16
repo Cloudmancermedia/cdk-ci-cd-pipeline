@@ -50,9 +50,9 @@ export class PipelineStack extends Stack {
           new ServicePrincipal('codebuild.amazonaws.com'),
           new ServicePrincipal('codepipeline.amazonaws.com')
         ),
-        managedPolicies: [
-          ManagedPolicy.fromAwsManagedPolicyName('AWSCodeBuildAdminAccess'),
-        ],
+        // managedPolicies: [
+        //   ManagedPolicy.fromAwsManagedPolicyName('AWSCodeBuildAdminAccess'),
+        // ],
         inlinePolicies: {
           CdkDeployPermissions: new PolicyDocument({
             statements: [
@@ -65,30 +65,6 @@ export class PipelineStack extends Stack {
         }
       }
     )
-    // Create the "parent" CodePipeline role
-    // const pipelineRole = new Role(
-    //   this,
-    //   'PipelineRole',
-    //   {
-    //     assumedBy: new ServicePrincipal('codepipeline.amazonaws.com'),
-    //     managedPolicies: [
-    //       ManagedPolicy.fromAwsManagedPolicyName('AWSCodePipeline_FullAccess'),
-    //     ],
-    //   }
-    // )
-    // The Pipeline runs as a unit, and thus the overarching Pipeline role must be allowed to assume the "child" CodeBuild role.
-    // pipelineRole.addToPolicy(new PolicyStatement({
-    //   actions: ['sts:AssumeRole'],
-    //   resources: [infrastructureDeployRole.roleArn],
-    // }));
-    // The CodeBuild role must explicitly allow the Pipeline role as a principal in order to work, otherwise it will error on deploy.
-    // infrastructureDeployRole.assumeRolePolicy?.addStatements(
-    //   new PolicyStatement({
-    //     effect: Effect.ALLOW,
-    //     principals: [pipelineRole],
-    //     actions: ['sts:AssumeRole'],
-    //   })
-    // );
 
     // :::::::::: AWS::S3::Bucket ::::::::::
     // This is the bucket that will house the web application and will serve as the origin for CloudFront
@@ -112,7 +88,7 @@ export class PipelineStack extends Stack {
     );
 
      // Define the domain name and hosted zone
-    //  const domainName = `${subdomain}domain.com`;
+    //  const domainName = `${subdomain}modernserverless.io`;
     //  const hostedZone = new HostedZone(
     //   this,
     //   'HostedZone',
