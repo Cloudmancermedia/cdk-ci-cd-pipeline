@@ -3,8 +3,7 @@ import { App } from 'aws-cdk-lib';
 import { InfrastructureStack } from '../lib/infrastructure-stack';
 
 const app = new App();
-const env = app.node.tryGetContext('env')
-const { envName } = app.node.tryGetContext(env)
+const envName = app.node.tryGetContext('env')
 new InfrastructureStack(
   app,
   'InfrastructureStack', 
