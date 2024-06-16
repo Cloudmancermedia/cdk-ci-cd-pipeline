@@ -6,7 +6,7 @@ const app = new App();
 // for new environments, like sandboxes etc., simply copy the cdk.json context format for dev and change the values accordingly.
 const environments = ['dev', 'prod']
 const deployEnvironment = app.node.tryGetContext('env');
-if (!deployEnvironment || !environments.includes(deployEnvironment)) throw new Error('Please supply the env context variable: cdk deploy --context env=dev/prod/etc')
+if (!deployEnvironment || !environments.includes(deployEnvironment)) throw new Error('Please supply the env context variable: cdk deploy --context env=dev/prod')
 let env = app.node.tryGetContext(deployEnvironment);
 // const frontendRepoName = app.node.tryGetContext('frontendRepoName');
 const infrastructureRepoName = app.node.tryGetContext('infrastructureRepoName');
