@@ -7,10 +7,10 @@ interface InfrastructureStackProps extends StackProps {
 }
 
 export class InfrastructureStack extends Stack {
-  constructor(scope: Construct, id: string, props?: InfrastructureStackProps) {
+  constructor(scope: Construct, id: string, props: InfrastructureStackProps) {
     super(scope, id, props);
 
-    const envName = props?.envName
+    const { envName } = props
 
     console.log(`${envName} environment detected. deploying s3 bucket.`)
 
