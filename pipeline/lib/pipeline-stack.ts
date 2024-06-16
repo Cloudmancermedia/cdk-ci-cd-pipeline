@@ -1,4 +1,6 @@
 import { RemovalPolicy, SecretValue, Stack, StackProps } from 'aws-cdk-lib';
+import { CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
+import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { BuildSpec, LinuxBuildImage, PipelineProject } from 'aws-cdk-lib/aws-codebuild';
@@ -6,6 +8,8 @@ import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
 import { CodeBuildAction, GitHubSourceAction, S3DeployAction } from 'aws-cdk-lib/aws-codepipeline-actions';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { CompositePrincipal, Effect, ManagedPolicy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 
@@ -60,29 +64,29 @@ export class PipelineStack extends Stack {
       }
     )
     // Create the "parent" CodePipeline role
-    const pipelineRole = new Role(
-      this,
-      'PipelineRole',
-      {
-        assumedBy: new ServicePrincipal('codepipeline.amazonaws.com'),
-        managedPolicies: [
-          ManagedPolicy.fromAwsManagedPolicyName('AWSCodePipeline_FullAccess'),
-        ],
-      }
-    )
+    // const pipelineRole = new Role(
+    //   this,
+    //   'PipelineRole',
+    //   {
+    //     assumedBy: new ServicePrincipal('codepipeline.amazonaws.com'),
+    //     managedPolicies: [
+    //       ManagedPolicy.fromAwsManagedPolicyName('AWSCodePipeline_FullAccess'),
+    //     ],
+    //   }
+    // )
     // The Pipeline runs as a unit, and thus the overarching Pipeline role must be allowed to assume the "child" CodeBuild role.
-    pipelineRole.addToPolicy(new PolicyStatement({
-      actions: ['sts:AssumeRole'],
-      resources: [infrastructureDeployRole.roleArn],
-    }));
+    // pipelineRole.addToPolicy(new PolicyStatement({
+    //   actions: ['sts:AssumeRole'],
+    //   resources: [infrastructureDeployRole.roleArn],
+    // }));
     // The CodeBuild role must explicitly allow the Pipeline role as a principal in order to work, otherwise it will error on deploy.
-    infrastructureDeployRole.assumeRolePolicy?.addStatements(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        principals: [pipelineRole],
-        actions: ['sts:AssumeRole'],
-      })
-    );
+    // infrastructureDeployRole.assumeRolePolicy?.addStatements(
+    //   new PolicyStatement({
+    //     effect: Effect.ALLOW,
+    //     principals: [pipelineRole],
+    //     actions: ['sts:AssumeRole'],
+    //   })
+    // );
 
     // :::::::::: AWS::S3::Bucket ::::::::::
     // This is the bucket that will house the web application and will serve as the origin for CloudFront
@@ -105,6 +109,25 @@ export class PipelineStack extends Stack {
       }
     );
 
+     // Define the domain name and hosted zone
+    //  const domainName = 'domain.com';
+    //  const hostedZone = new HostedZone(
+    //   this,
+    //   'HostedZone',
+    //   {
+    //      zoneName: domainName,
+    //   }
+    // );
+
+    // const certificate = new Certificate(
+    //   this, 
+    //   'SSLCertificate', 
+    //   {
+    //     domainName: domainName,
+    //     validation: CertificateValidation.fromDns(hostedZone),
+    //   }
+    // );
+ 
     // :::::::::: AWS::CloudFront::Distribution ::::::::::
     // const distribution = new Distribution(
     //   this,
@@ -114,7 +137,9 @@ export class PipelineStack extends Stack {
     //       origin: new S3Origin(frontendBucket),
     //       viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
     //     },
-    //   }
+    //     domainNames: [domainName],
+    //     certificate,
+    //   },
     // );
 
     //// :::::::::: AWS::S3::BucketPolicy ::::::::::
@@ -130,6 +155,15 @@ export class PipelineStack extends Stack {
     //   },
     // });
     // frontendBucket.addToResourcePolicy(bucketPolicy);
+
+    // const aRecord = new ARecord(
+    //   this,
+    //   'AliasRecord',
+    //   {
+    //     zone: hostedZone,
+    //     target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
+    //   }
+    // );
     
     // :::::::::: AWS::Code::Pipeline ::::::::::
     // Source artifacts
@@ -219,8 +253,9 @@ export class PipelineStack extends Stack {
       this,
       'CIPipeline', 
       {
-        pipelineName: `-${envName}-CI-Pipeline`,
-        role: pipelineRole,
+        pipelineName: `${envName}-CI-Pipeline`,
+        role: infrastructureDeployRole,
+        // role: pipelineRole,
         artifactBucket
       }
     );

@@ -80,8 +80,8 @@
     "prod": {
       "envName": "prod",
       "subdomain": "",
-      "frontendBranchName": "prod",
-      "infrastructureBranchName": "prod"
+      "frontendBranchName": "main",
+      "infrastructureBranchName": "main"
     }
   }
 }
