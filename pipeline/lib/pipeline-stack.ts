@@ -16,8 +16,8 @@ import { Construct } from 'constructs';
 interface PipelineStackProps extends StackProps {
   envName: string;
   subdomain: string;
-  // frontendRepoName: string;
-  // frontendBranchName: string;
+  frontendRepoName: string;
+  frontendBranchName: string;
   infrastructureRepoName: string;
   infrastructureBranchName: string;
   repositoryOwner: string;
@@ -30,8 +30,8 @@ export class PipelineStack extends Stack {
     const { 
       envName,
       subdomain,
-      // frontendRepoName,
-      // frontendBranchName,
+      frontendRepoName,
+      frontendBranchName,
       infrastructureRepoName,
       infrastructureBranchName,
       repositoryOwner
@@ -50,9 +50,6 @@ export class PipelineStack extends Stack {
           new ServicePrincipal('codebuild.amazonaws.com'),
           new ServicePrincipal('codepipeline.amazonaws.com')
         ),
-        // managedPolicies: [
-        //   ManagedPolicy.fromAwsManagedPolicyName('AWSCodeBuildAdminAccess'),
-        // ],
         inlinePolicies: {
           CdkDeployPermissions: new PolicyDocument({
             statements: [
@@ -68,15 +65,15 @@ export class PipelineStack extends Stack {
 
     // :::::::::: AWS::S3::Bucket ::::::::::
     // This is the bucket that will house the web application and will serve as the origin for CloudFront
-    // const frontendBucket = new Bucket(
-    //   this,
-    //   "FrontendSourceBucket",
-    //   {
-    //     bucketName: `cloudmancer-${envName}-frontend-source-bucket`,
-    //     removalPolicy: RemovalPolicy.DESTROY,
-    //     autoDeleteObjects: true,
-    //   }
-    // );
+    const frontendBucket = new Bucket(
+      this,
+      "FrontendSourceBucket",
+      {
+        bucketName: `cloudmancer-${envName}-frontend-source-bucket`,
+        removalPolicy: RemovalPolicy.DESTROY,
+        autoDeleteObjects: true,
+      }
+    );
     const artifactBucket = new Bucket(
       this,
       'ArtifactBucket',
@@ -88,64 +85,64 @@ export class PipelineStack extends Stack {
     );
 
      // Define the domain name and hosted zone
-    //  const domainName = `${subdomain}modernserverless.io`;
-    //  const hostedZone = new HostedZone(
-    //   this,
-    //   'HostedZone',
-    //   {
-    //      zoneName: domainName,
-    //   }
-    // );
+     const domainName = `${subdomain}modernserverless.io`;
+     const hostedZone = new HostedZone(
+      this,
+      'HostedZone',
+      {
+         zoneName: domainName,
+      }
+    );
 
-    // const certificate = new Certificate(
-    //   this, 
-    //   'SSLCertificate', 
-    //   {
-    //     domainName: domainName,
-    //     validation: CertificateValidation.fromDns(hostedZone),
-    //   }
-    // );
+    const certificate = new Certificate(
+      this, 
+      'SSLCertificate', 
+      {
+        domainName: domainName,
+        validation: CertificateValidation.fromDns(hostedZone),
+      }
+    );
  
     // :::::::::: AWS::CloudFront::Distribution ::::::::::
-    // const distribution = new Distribution(
-    //   this,
-    //   'FrontendDistribution',
-    //   {
-    //     defaultBehavior: {
-    //       origin: new S3Origin(frontendBucket),
-    //       viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-    //     },
-    //     domainNames: [domainName],
-    //     certificate,
-    //   },
-    // );
+    const distribution = new Distribution(
+      this,
+      'FrontendDistribution',
+      {
+        defaultBehavior: {
+          origin: new S3Origin(frontendBucket),
+          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        },
+        domainNames: [domainName],
+        certificate,
+      },
+    );
 
     //// :::::::::: AWS::S3::BucketPolicy ::::::::::
     // Restrict S3 Bucket Access to only allow traffic from CloudFront
-    // const bucketPolicy = new PolicyStatement({
-    //   actions: ['s3:GetObject'],
-    //   resources: [frontendBucket.arnForObjects('*')],
-    //   principals: [new ServicePrincipal('cloudfront.amazonaws.com')],
-    //   conditions: {
-    //     StringEquals: {
-    //       'AWS:SourceArn': distribution.distributionDomainName,
-    //     },
-    //   },
-    // });
-    // frontendBucket.addToResourcePolicy(bucketPolicy);
+    const bucketPolicy = new PolicyStatement({
+      actions: ['s3:GetObject'],
+      resources: [frontendBucket.arnForObjects('*')],
+      principals: [new ServicePrincipal('cloudfront.amazonaws.com')],
+      conditions: {
+        StringEquals: {
+          'AWS:SourceArn': distribution.distributionDomainName,
+        },
+      },
+    });
+    frontendBucket.addToResourcePolicy(bucketPolicy);
 
-    // const aRecord = new ARecord(
-    //   this,
-    //   'AliasRecord',
-    //   {
-    //     zone: hostedZone,
-    //     target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
-    //   }
-    // );
+    const aRecord = new ARecord(
+      this,
+      'AliasRecord',
+      {
+        zone: hostedZone,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
+      }
+    );
     
     // :::::::::: AWS::Code::Pipeline ::::::::::
     // Source artifacts
-    // const frontendSourceOutput = new Artifact('FrontendSourceOutput');
+    const frontendSourceOutput = new Artifact('FrontendSourceOutput');
     const infrastructureSourceOutput = new Artifact('InfrastructureSourceOutput');
 
     // Build project for infrastructure (CDK)
@@ -186,45 +183,45 @@ export class PipelineStack extends Stack {
     );
 
     // Build project for frontend (Vue.js)
-    // const frontendBuildProject = new PipelineProject(
-    //   this,
-    //   'FrontendBuildProject',
-    //   {
-    //     environment: {
-    //       buildImage: LinuxBuildImage.AMAZON_LINUX_2_5,
-    //     },
-    //     environmentVariables: {
-    //       FRONTEND_S3_BUCKET: {
-    //         value: frontendBucket.bucketName
-    //       }
-    //     },
-    //     buildSpec: BuildSpec.fromObject({
-    //       version: '0.2',
-    //       phases: {
-    //         install: {
-    //           'runtime-versions': {
-    //             nodejs: '20.x'
-    //           },
-    //         },
-    //         pre_build: {
-    //           commands: [
-    //             'npm install',
-    //           ]
-    //         },
-    //         build: {
-    //           commands: [
-    //             'echo Building Frontend...',
-    //             'npm run build',
-    //           ]
-    //         },
-    //       },
-    //       artifacts: {
-    //         'base-directory': 'dist',
-    //         files: '**/*',
-    //       },
-    //     }),
-    //   }
-    // );
+    const frontendBuildProject = new PipelineProject(
+      this,
+      'FrontendBuildProject',
+      {
+        environment: {
+          buildImage: LinuxBuildImage.AMAZON_LINUX_2_5,
+        },
+        environmentVariables: {
+          FRONTEND_S3_BUCKET: {
+            value: frontendBucket.bucketName
+          }
+        },
+        buildSpec: BuildSpec.fromObject({
+          version: '0.2',
+          phases: {
+            install: {
+              'runtime-versions': {
+                nodejs: '20.x'
+              },
+            },
+            pre_build: {
+              commands: [
+                'npm install',
+              ]
+            },
+            build: {
+              commands: [
+                'echo Building Frontend...',
+                'npm run build',
+              ]
+            },
+          },
+          artifacts: {
+            'base-directory': 'dist',
+            files: '**/*',
+          },
+        }),
+      }
+    );
 
     // Define the CodePipeline
     const pipeline = new Pipeline(
@@ -233,7 +230,6 @@ export class PipelineStack extends Stack {
       {
         pipelineName: `${envName}-CI-Pipeline`,
         role: infrastructureDeployRole,
-        // role: pipelineRole,
         artifactBucket
       }
     );
@@ -250,41 +246,41 @@ export class PipelineStack extends Stack {
           output: infrastructureSourceOutput,
           oauthToken: gitHubToken
         }),
-        // new GitHubSourceAction({
-        //   owner: repositoryOwner,
-        //   repo: frontendRepoName,
-        //   actionName: 'InfrastructureSource',
-        //   branch: frontendBranchName,
-        //   output: frontendSourceOutput,
-        //   oauthToken: gitHubToken
-        // })
+        new GitHubSourceAction({
+          owner: repositoryOwner,
+          repo: frontendRepoName,
+          actionName: 'InfrastructureSource',
+          branch: frontendBranchName,
+          output: frontendSourceOutput,
+          oauthToken: gitHubToken
+        })
       ],
     });
 
     // Build frontend app
-    // const frontendBuildOutput = new Artifact('FrontendBuildOutput');
-    // pipeline.addStage({
-    //   stageName: 'Build',
-    //   actions: [
-    //     new CodeBuildAction({
-    //       actionName: 'BuildFrontend',
-    //       project: frontendBuildProject,
-    //       input: frontendSourceOutput,
-    //       outputs: [frontendBuildOutput],
-    //     }),
-    //   ],
-    // });
+    const frontendBuildOutput = new Artifact('FrontendBuildOutput');
+    pipeline.addStage({
+      stageName: 'Build',
+      actions: [
+        new CodeBuildAction({
+          actionName: 'BuildFrontend',
+          project: frontendBuildProject,
+          input: frontendSourceOutput,
+          outputs: [frontendBuildOutput],
+        }),
+      ],
+    });
 
     // Deploy frontend to S3 and deploy the CDK infrastructure
     pipeline.addStage({
       stageName: 'Deploy',
       actions: [
-        // new S3DeployAction({
-        //   actionName: 'DeployFrontend',
-        //   bucket: frontendBucket,
-        //   input: frontendBuildOutput,
-        //   extract: true
-        // }),
+        new S3DeployAction({
+          actionName: 'DeployFrontend',
+          bucket: frontendBucket,
+          input: frontendBuildOutput,
+          extract: true
+        }),
         new CodeBuildAction({
           actionName: 'DeployCdkInfrastructure',
           project: infrastructureBuildProject,
