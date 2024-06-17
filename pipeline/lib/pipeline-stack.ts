@@ -15,8 +15,8 @@ import { Construct } from 'constructs';
 interface PipelineStackProps extends StackProps {
   envName: string;
   subdomain: string;
-  frontendRepoName: string;
-  frontendBranchName: string;
+  // frontendRepoName: string;
+  // frontendBranchName: string;
   infrastructureRepoName: string;
   infrastructureBranchName: string;
   repositoryOwner: string;
@@ -29,8 +29,8 @@ export class PipelineStack extends Stack {
     const { 
       envName,
       subdomain,
-      frontendRepoName,
-      frontendBranchName,
+      // frontendRepoName,
+      // frontendBranchName,
       infrastructureRepoName,
       infrastructureBranchName,
       repositoryOwner
@@ -64,15 +64,15 @@ export class PipelineStack extends Stack {
 
     // :::::::::: AWS::S3::Bucket ::::::::::
     // This is the bucket that will house the web application and will serve as the origin for CloudFront
-    const frontendBucket = new Bucket(
-      this,
-      "FrontendSourceBucket",
-      {
-        bucketName: `cloudmancer-${envName}-frontend-source-bucket`,
-        removalPolicy: RemovalPolicy.DESTROY,
-        autoDeleteObjects: true,
-      }
-    );
+    // const frontendBucket = new Bucket(
+    //   this,
+    //   "FrontendSourceBucket",
+    //   {
+    //     bucketName: `cloudmancer-${envName}-frontend-source-bucket`,
+    //     removalPolicy: RemovalPolicy.DESTROY,
+    //     autoDeleteObjects: true,
+    //   }
+    // );
     const artifactBucket = new Bucket(
       this,
       'ArtifactBucket',
@@ -85,59 +85,59 @@ export class PipelineStack extends Stack {
 
     // :::::::::: AWS::Route53 ::::::::::
     // Define the domain name and hosted zone
-    const domainName = `${subdomain}modernserverless.io`;
-    const hostedZone = new HostedZone(
-      this,
-      'HostedZone',
-      {
-         zoneName: domainName,
-      }
-    );
+    // const domainName = `${subdomain}modernserverless.io`;
+    // const hostedZone = new HostedZone(
+    //   this,
+    //   'HostedZone',
+    //   {
+    //      zoneName: domainName,
+    //   }
+    // );
 
-    const certificate = new Certificate(
-      this, 
-      'SSLCertificate', 
-      {
-        domainName: domainName,
-        validation: CertificateValidation.fromDns(hostedZone),
-      }
-    );
+    // const certificate = new Certificate(
+    //   this, 
+    //   'SSLCertificate', 
+    //   {
+    //     domainName: domainName,
+    //     validation: CertificateValidation.fromDns(hostedZone),
+    //   }
+    // );
     
-    const originAccessIdentity = new OriginAccessIdentity(this, 'OriginAccessIdentity');
-    frontendBucket.grantRead(originAccessIdentity);
+    // const originAccessIdentity = new OriginAccessIdentity(this, 'OriginAccessIdentity');
+    // frontendBucket.grantRead(originAccessIdentity);
     
     // :::::::::: AWS::CloudFront::Distribution ::::::::::
-    const distribution = new Distribution(
-      this,
-      'FrontendDistribution',
-      {
-        defaultRootObject: 'index.html',
-        defaultBehavior: {
-          origin: new S3Origin(
-            frontendBucket,
-            {
-              originAccessIdentity
-            }
-          ),
-          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        },
-        domainNames: [domainName],
-        certificate,
-      },
-    );
+    // const distribution = new Distribution(
+    //   this,
+    //   'FrontendDistribution',
+    //   {
+    //     defaultRootObject: 'index.html',
+    //     defaultBehavior: {
+    //       origin: new S3Origin(
+    //         frontendBucket,
+    //         {
+    //           originAccessIdentity
+    //         }
+    //       ),
+    //       viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+    //     },
+    //     domainNames: [domainName],
+    //     certificate,
+    //   },
+    // );
 
-    const aRecord = new ARecord(
-      this,
-      'AliasRecord',
-      {
-        zone: hostedZone,
-        target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
-      }
-    );
+    // const aRecord = new ARecord(
+    //   this,
+    //   'AliasRecord',
+    //   {
+    //     zone: hostedZone,
+    //     target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
+    //   }
+    // );
     
     // :::::::::: AWS::Code::Pipeline ::::::::::
     // Source artifacts
-    const frontendSourceOutput = new Artifact('FrontendSourceOutput');
+    // const frontendSourceOutput = new Artifact('FrontendSourceOutput');
     const infrastructureSourceOutput = new Artifact('InfrastructureSourceOutput');
 
     // Build project for infrastructure (CDK)
@@ -178,45 +178,45 @@ export class PipelineStack extends Stack {
     );
 
     // Build project for frontend (Vue.js)
-    const frontendBuildProject = new PipelineProject(
-      this,
-      'FrontendBuildProject',
-      {
-        environment: {
-          buildImage: LinuxBuildImage.AMAZON_LINUX_2_5,
-        },
-        environmentVariables: {
-          FRONTEND_S3_BUCKET: {
-            value: frontendBucket.bucketName
-          }
-        },
-        buildSpec: BuildSpec.fromObject({
-          version: '0.2',
-          phases: {
-            install: {
-              'runtime-versions': {
-                nodejs: '20.x'
-              },
-            },
-            pre_build: {
-              commands: [
-                'npm install',
-              ]
-            },
-            build: {
-              commands: [
-                'echo Building Frontend...',
-                'npm run build',
-              ]
-            },
-          },
-          artifacts: {
-            'base-directory': 'dist',
-            files: '**/*',
-          },
-        }),
-      }
-    );
+    // const frontendBuildProject = new PipelineProject(
+    //   this,
+    //   'FrontendBuildProject',
+    //   {
+    //     environment: {
+    //       buildImage: LinuxBuildImage.AMAZON_LINUX_2_5,
+    //     },
+    //     environmentVariables: {
+    //       FRONTEND_S3_BUCKET: {
+    //         value: frontendBucket.bucketName
+    //       }
+    //     },
+    //     buildSpec: BuildSpec.fromObject({
+    //       version: '0.2',
+    //       phases: {
+    //         install: {
+    //           'runtime-versions': {
+    //             nodejs: '20.x'
+    //           },
+    //         },
+    //         pre_build: {
+    //           commands: [
+    //             'npm install',
+    //           ]
+    //         },
+    //         build: {
+    //           commands: [
+    //             'echo Building Frontend...',
+    //             'npm run build',
+    //           ]
+    //         },
+    //       },
+    //       artifacts: {
+    //         'base-directory': 'dist',
+    //         files: '**/*',
+    //       },
+    //     }),
+    //   }
+    // );
 
     // Define the CodePipeline
     const pipeline = new Pipeline(
@@ -241,41 +241,41 @@ export class PipelineStack extends Stack {
           output: infrastructureSourceOutput,
           oauthToken: gitHubToken
         }),
-        new GitHubSourceAction({
-          owner: repositoryOwner,
-          repo: frontendRepoName,
-          actionName: 'FrontendSource',
-          branch: frontendBranchName,
-          output: frontendSourceOutput,
-          oauthToken: gitHubToken
-        })
+        // new GitHubSourceAction({
+        //   owner: repositoryOwner,
+        //   repo: frontendRepoName,
+        //   actionName: 'FrontendSource',
+        //   branch: frontendBranchName,
+        //   output: frontendSourceOutput,
+        //   oauthToken: gitHubToken
+        // })
       ],
     });
 
     // Build frontend app
-    const frontendBuildOutput = new Artifact('FrontendBuildOutput');
-    pipeline.addStage({
-      stageName: 'Build',
-      actions: [
-        new CodeBuildAction({
-          actionName: 'BuildFrontend',
-          project: frontendBuildProject,
-          input: frontendSourceOutput,
-          outputs: [frontendBuildOutput],
-        }),
-      ],
-    });
+    // const frontendBuildOutput = new Artifact('FrontendBuildOutput');
+    // pipeline.addStage({
+    //   stageName: 'Build',
+    //   actions: [
+    //     new CodeBuildAction({
+    //       actionName: 'BuildFrontend',
+    //       project: frontendBuildProject,
+    //       input: frontendSourceOutput,
+    //       outputs: [frontendBuildOutput],
+    //     }),
+    //   ],
+    // });
 
     // Deploy frontend to S3 and deploy the CDK infrastructure
     pipeline.addStage({
       stageName: 'Deploy',
       actions: [
-        new S3DeployAction({
-          actionName: 'DeployFrontend',
-          bucket: frontendBucket,
-          input: frontendBuildOutput,
-          extract: true
-        }),
+        // new S3DeployAction({
+        //   actionName: 'DeployFrontend',
+        //   bucket: frontendBucket,
+        //   input: frontendBuildOutput,
+        //   extract: true
+        // }),
         new CodeBuildAction({
           actionName: 'DeployCdkInfrastructure',
           project: infrastructureBuildProject,
