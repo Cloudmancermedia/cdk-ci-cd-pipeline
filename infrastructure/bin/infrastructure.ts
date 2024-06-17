@@ -6,7 +6,7 @@ const app = new App();
 const envName = app.node.tryGetContext('env')
 new InfrastructureStack(
   app,
-  'InfrastructureStack', 
+  `${envName}-Infrastructure-Stack`, 
   {
     envName,
     description: `Stack for the ${envName} infrastructure deployed using the CI pipeline. If you need to delete everything involving the ${envName} environment, delete this stack first, then the CI stack.`
