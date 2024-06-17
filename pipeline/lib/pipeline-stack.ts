@@ -1,13 +1,12 @@
 import { RemovalPolicy, SecretValue, Stack, StackProps } from 'aws-cdk-lib';
 import { CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
-import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
+import { CfnOriginAccessControl, CloudFrontWebDistribution, Distribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { BuildSpec, LinuxBuildImage, PipelineProject } from 'aws-cdk-lib/aws-codebuild';
 import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
 import { CodeBuildAction, GitHubSourceAction, S3DeployAction } from 'aws-cdk-lib/aws-codepipeline-actions';
-import { Repository } from 'aws-cdk-lib/aws-ecr';
-import { CompositePrincipal, Effect, ManagedPolicy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { CompositePrincipal, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -84,9 +83,10 @@ export class PipelineStack extends Stack {
       }
     );
 
-     // Define the domain name and hosted zone
-     const domainName = `${subdomain}modernserverless.io`;
-     const hostedZone = new HostedZone(
+    // :::::::::: AWS::Route53 ::::::::::
+    // Define the domain name and hosted zone
+    const domainName = `${subdomain}modernserverless.io`;
+    const hostedZone = new HostedZone(
       this,
       'HostedZone',
       {
@@ -102,14 +102,23 @@ export class PipelineStack extends Stack {
         validation: CertificateValidation.fromDns(hostedZone),
       }
     );
- 
+    
+    const originAccessIdentity = new OriginAccessIdentity(this, 'OriginAccessIdentity');
+    frontendBucket.grantRead(originAccessIdentity);
+    
     // :::::::::: AWS::CloudFront::Distribution ::::::::::
     const distribution = new Distribution(
       this,
       'FrontendDistribution',
       {
+        defaultRootObject: 'index.html',
         defaultBehavior: {
-          origin: new S3Origin(frontendBucket),
+          origin: new S3Origin(
+            frontendBucket,
+            {
+              originAccessIdentity
+            }
+          ),
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         },
         domainNames: [domainName],
@@ -119,17 +128,17 @@ export class PipelineStack extends Stack {
 
     //// :::::::::: AWS::S3::BucketPolicy ::::::::::
     // Restrict S3 Bucket Access to only allow traffic from CloudFront
-    const bucketPolicy = new PolicyStatement({
-      actions: ['s3:GetObject'],
-      resources: [frontendBucket.arnForObjects('*')],
-      principals: [new ServicePrincipal('cloudfront.amazonaws.com')],
-      conditions: {
-        StringEquals: {
-          'AWS:SourceArn': distribution.distributionDomainName,
-        },
-      },
-    });
-    frontendBucket.addToResourcePolicy(bucketPolicy);
+    // const bucketPolicy = new PolicyStatement({
+    //   actions: ['s3:GetObject'],
+    //   resources: [frontendBucket.arnForObjects('*')],
+    //   principals: [new ServicePrincipal('cloudfront.amazonaws.com')],
+    //   conditions: {
+    //     StringEquals: {
+    //       'AWS:SourceArn': `arn:aws:cloudfront::${this.account}:distribution/${distribution.distributionId}`,
+    //     },
+    //   },
+    // });
+    // frontendBucket.addToResourcePolicy(bucketPolicy);
 
     const aRecord = new ARecord(
       this,
@@ -249,7 +258,7 @@ export class PipelineStack extends Stack {
         new GitHubSourceAction({
           owner: repositoryOwner,
           repo: frontendRepoName,
-          actionName: 'InfrastructureSource',
+          actionName: 'FrontendSource',
           branch: frontendBranchName,
           output: frontendSourceOutput,
           oauthToken: gitHubToken
