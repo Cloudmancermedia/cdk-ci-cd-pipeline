@@ -126,20 +126,6 @@ export class PipelineStack extends Stack {
       },
     );
 
-    //// :::::::::: AWS::S3::BucketPolicy ::::::::::
-    // Restrict S3 Bucket Access to only allow traffic from CloudFront
-    // const bucketPolicy = new PolicyStatement({
-    //   actions: ['s3:GetObject'],
-    //   resources: [frontendBucket.arnForObjects('*')],
-    //   principals: [new ServicePrincipal('cloudfront.amazonaws.com')],
-    //   conditions: {
-    //     StringEquals: {
-    //       'AWS:SourceArn': `arn:aws:cloudfront::${this.account}:distribution/${distribution.distributionId}`,
-    //     },
-    //   },
-    // });
-    // frontendBucket.addToResourcePolicy(bucketPolicy);
-
     const aRecord = new ARecord(
       this,
       'AliasRecord',
