@@ -185,11 +185,6 @@ export class PipelineStack extends Stack {
     //     environment: {
     //       buildImage: LinuxBuildImage.AMAZON_LINUX_2_5,
     //     },
-    //     environmentVariables: {
-    //       FRONTEND_S3_BUCKET: {
-    //         value: frontendBucket.bucketName
-    //       }
-    //     },
     //     buildSpec: BuildSpec.fromObject({
     //       version: '0.2',
     //       phases: {
