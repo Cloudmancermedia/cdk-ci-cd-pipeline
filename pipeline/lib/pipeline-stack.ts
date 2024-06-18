@@ -3,7 +3,7 @@ import { CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
-import { BuildSpec, LinuxBuildImage, PipelineProject } from 'aws-cdk-lib/aws-codebuild';
+import { BuildSpec, Cache, LinuxBuildImage, LocalCacheMode, PipelineProject } from 'aws-cdk-lib/aws-codebuild';
 import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
 import { CodeBuildAction, GitHubSourceAction, S3DeployAction } from 'aws-cdk-lib/aws-codepipeline-actions';
 import { CompositePrincipal, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
@@ -209,7 +209,13 @@ export class PipelineStack extends Stack {
     //         'base-directory': 'dist',
     //         files: '**/*',
     //       },
+    //       cache: {
+    //         paths: [
+    //           'node_modules/**/*',
+    //         ],
+    //       },
     //     }),
+    //     cache: Cache.local(LocalCacheMode.CUSTOM),
     //   }
     // );
 
