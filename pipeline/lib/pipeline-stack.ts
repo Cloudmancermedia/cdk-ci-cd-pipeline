@@ -14,13 +14,13 @@ import { Construct } from 'constructs';
 
 interface PipelineStackProps extends StackProps {
   envName: string;
-  subdomain: string;
-  domain: string;
   // frontendRepoName: string;
   // frontendBranchName: string;
   infrastructureRepoName: string;
   infrastructureBranchName: string;
   repositoryOwner: string;
+  subdomain: string;
+  domain: string;
 }
 
 export class PipelineStack extends Stack {
@@ -29,13 +29,13 @@ export class PipelineStack extends Stack {
     console.log(props)
     const { 
       envName,
-      // subdomain,
-      // domain,
       // frontendRepoName,
       // frontendBranchName,
       infrastructureRepoName,
       infrastructureBranchName,
       repositoryOwner
+      // subdomain,
+      // domain,
     } = props;
 
     const gitHubToken = SecretValue.secretsManager('github-token');
