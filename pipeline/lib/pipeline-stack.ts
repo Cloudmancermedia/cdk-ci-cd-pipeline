@@ -15,6 +15,7 @@ import { Construct } from 'constructs';
 interface PipelineStackProps extends StackProps {
   envName: string;
   subdomain: string;
+  domain: string;
   // frontendRepoName: string;
   // frontendBranchName: string;
   infrastructureRepoName: string;
@@ -28,7 +29,8 @@ export class PipelineStack extends Stack {
     console.log(props)
     const { 
       envName,
-      subdomain,
+      // subdomain,
+      // domain,
       // frontendRepoName,
       // frontendBranchName,
       infrastructureRepoName,
@@ -85,7 +87,7 @@ export class PipelineStack extends Stack {
 
     // :::::::::: AWS::Route53 ::::::::::
     // Define the domain name and hosted zone
-    // const domainName = `${subdomain}modernserverless.io`;
+    // const domainName = `${subdomain}${domain}`;
     // const hostedZone = new HostedZone(
     //   this,
     //   'HostedZone',

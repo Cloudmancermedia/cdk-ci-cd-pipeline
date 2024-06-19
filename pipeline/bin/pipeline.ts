@@ -11,10 +11,12 @@ let env = app.node.tryGetContext(deployEnvironment);
 // const frontendRepoName = app.node.tryGetContext('frontendRepoName');
 const infrastructureRepoName = app.node.tryGetContext('infrastructureRepoName');
 const repositoryOwner = app.node.tryGetContext('repositoryOwner');
+const domain = app.node.tryGetContext('domain');
 env = {
   ...env,
   // frontendRepoName,
   infrastructureRepoName,
+  domain,
   repositoryOwner,
   description: `Stack for the ${deployEnvironment} CI pipeline deployed using the CDK. If you need to delete this stack, delete the ${deployEnvironment} CDK infrastructure stack first.`
 }

@@ -71,6 +71,7 @@
     "frontendRepoName": "vue-app",
     "infrastructureRepoName": "cdk-ci-cd-pipeline",
     "repositoryOwner": "Cloudmancermedia",
+    "domain": "modernserverless.io",
     "dev": {
       "envName": "dev",
       "subdomain": "dev.",
