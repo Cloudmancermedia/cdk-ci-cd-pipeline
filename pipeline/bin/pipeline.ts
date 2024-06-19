@@ -8,13 +8,13 @@ const environments = ['dev', 'prod']
 const deployEnvironment = app.node.tryGetContext('env');
 if (!deployEnvironment || !environments.includes(deployEnvironment)) throw new Error('Please supply the env context variable: cdk deploy --context env=dev/prod')
 let env = app.node.tryGetContext(deployEnvironment);
-// const frontendRepoName = app.node.tryGetContext('frontendRepoName');
+const frontendRepoName = app.node.tryGetContext('frontendRepoName');
 const infrastructureRepoName = app.node.tryGetContext('infrastructureRepoName');
 const repositoryOwner = app.node.tryGetContext('repositoryOwner');
 const domain = app.node.tryGetContext('domain');
 env = {
   ...env,
-  // frontendRepoName,
+  frontendRepoName,
   infrastructureRepoName,
   domain,
   repositoryOwner,
