@@ -70,7 +70,7 @@ export class PipelineStack extends Stack {
       this,
       "FrontendSourceBucket",
       {
-        bucketName: `cloudmancer-${envName}-frontend-source-bucket`,
+        bucketName: `your-${envName}-frontend-source-bucket`,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
       }
@@ -79,7 +79,7 @@ export class PipelineStack extends Stack {
       this,
       'ArtifactBucket',
       {
-        bucketName:`cloudmancer-${envName}-codepipeline-artifact-bucket`,
+        bucketName:`your-${envName}-codepipeline-artifact-bucket`,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
       }
