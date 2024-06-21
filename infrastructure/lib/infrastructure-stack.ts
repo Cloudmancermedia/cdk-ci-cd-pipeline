@@ -18,7 +18,7 @@ export class InfrastructureStack extends Stack {
       this,
       "InfraBucket",
       {
-        bucketName: `cloudmancer-${DEPLOY_ENVIRONMENT}-infrastructure-bucket`,
+        bucketName: `your-${DEPLOY_ENVIRONMENT}-infrastructure-bucket`,
         removalPolicy: RemovalPolicy.DESTROY
       }
     )
