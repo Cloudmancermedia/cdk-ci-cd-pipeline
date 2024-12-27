@@ -1,4 +1,4 @@
-# cdk-ci-cd-pipeline
+# CDK CI/CI Pipeline
 
 Watch [Part 1](https://www.youtube.com/watch?v=Ie8_XNrp9RU) on YouTube
 
